@@ -1,0 +1,81 @@
+spring:
+  application:
+    name: pricecompare-backend
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/pricecompare}
+    username: ${SPRING_DATASOURCE_USERNAME:pricecompare}
+    password: ${SPRING_DATASOURCE_PASSWORD:pricecompare}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  mail:
+    host: ${MAILTRAP_HOST:sandbox.smtp.mailtrap.io}
+    port: ${MAILTRAP_PORT:2525}
+    username: ${MAILTRAP_USERNAME:your_mailtrap_username}
+    password: ${MAILTRAP_PASSWORD:your_mailtrap_password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  port: 8080
+
+jwt:
+  secret: ${JWT_SECRET:changethissecretkeyinproductionitmustbeatleast64characterslongforhs512}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+image:
+  service:
+    url: ${IMAGE_SERVICE_URL:http://localhost:5001}
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-2.5-flash}
+    url: https://generativelanguage.googleapis.com/v1beta/models
+
+app:
+  scraper:
+    enabled: true
+    schedule: "0 0 */6 * * *"
+    user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+  email:
+    from: noreply@pricecompare.ro
+    from-name: PriceCompare
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  info:
+    title: PriceCompare API
+    description: Visual price comparison REST API
+    version: 1.0.0
+
+logging:
+  level:
+    com.pricecompare: DEBUG
+    org.springframework.security: INFO

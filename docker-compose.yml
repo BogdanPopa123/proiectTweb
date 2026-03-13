@@ -1,0 +1,76 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: pricecompare-db
+    environment:
+      POSTGRES_DB: pricecompare
+      POSTGRES_USER: pricecompare
+      POSTGRES_PASSWORD: pricecompare
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pricecompare"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  image-service:
+    build:
+      context: ./image-service
+      dockerfile: Dockerfile
+    container_name: pricecompare-image-service
+    ports:
+      - "5001:5001"
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:5001/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pricecompare-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/pricecompare
+      SPRING_DATASOURCE_USERNAME: pricecompare
+      SPRING_DATASOURCE_PASSWORD: pricecompare
+      JWT_SECRET: ${JWT_SECRET:-changethissecretkeyinproductionitmustbeatleast64characterslongforhs512}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      MAILTRAP_HOST: sandbox.smtp.mailtrap.io
+      MAILTRAP_PORT: 2525
+      MAILTRAP_USERNAME: ${MAILTRAP_USERNAME:-your_mailtrap_username}
+      MAILTRAP_PASSWORD: ${MAILTRAP_PASSWORD:-your_mailtrap_password}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      SPRING_PROFILES_ACTIVE: docker
+      IMAGE_SERVICE_URL: http://image-service:5001
+    depends_on:
+      db:
+        condition: service_healthy
+      image-service:
+        condition: service_healthy
+    restart: on-failure
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pricecompare-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080
+
+volumes:
+  postgres_data:

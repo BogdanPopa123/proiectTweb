@@ -1,0 +1,41 @@
+# Environment files
+.env
+.env.local
+
+# Java / Maven
+backend/target/
+backend/.mvn/
+*.class
+*.jar
+*.war
+
+# Node / npm
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Docker volumes
+postgres_data/
+
+# Logs
+*.log
+
+
+DOCUMENTATION.md
+
+TRACKING.md
+
+.env.example
+
+image-service/requirements.txt
